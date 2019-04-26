@@ -1,0 +1,5 @@
+---
+- name: install python
+  apt:
+    state: present
+    name: python3

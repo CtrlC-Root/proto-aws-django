@@ -1,0 +1,8 @@
+# Playbook to configure a web instance.
+---
+- name: configure web instance
+  hosts: all
+  become: yes
+  roles:
+    - role: common
+    - role: python

@@ -29,6 +29,13 @@
       "expect_disconnect": true,
       "pause_before": "30s",
       "pause_after": "10s"
+    },
+    {
+      "type": "ansible",
+      "playbook_file": "./ansible/web.yaml",
+      "ansible_env_vars": [
+        "ANSIBLE_HOST_KEY_CHECKING=False"
+      ]
     }
   ]
 }
