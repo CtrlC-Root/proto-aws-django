@@ -31,10 +31,18 @@
       "pause_after": "10s"
     },
     {
+      "type": "shell",
+      "execute_command": "sudo sh -c '{{ .Vars }} {{ .Path }}'",
+      "script": "packer/scripts/02-install-python.sh",
+    },
+    {
       "type": "ansible",
       "playbook_file": "./ansible/web.yaml",
       "ansible_env_vars": [
         "ANSIBLE_HOST_KEY_CHECKING=False"
+      ],
+      "extra_arguments": [
+        "-e", "ansible_python_interpreter=/usr/bin/python3"
       ]
     }
   ]
