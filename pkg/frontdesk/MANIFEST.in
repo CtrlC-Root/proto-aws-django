@@ -1,0 +1,5 @@
+# scripts
+include manage.py
+
+# documentation
+include requirements.txt
