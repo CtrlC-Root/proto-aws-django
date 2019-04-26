@@ -1,0 +1,34 @@
+{
+  "variables": {},
+  "builders": [{
+    "type": "amazon-ebs",
+    "region": "us-east-2",
+    "source_ami_filter": {
+      "filters": {
+        "virtualization-type": "hvm",
+        "name": "ubuntu/images/*/ubuntu-bionic-18.04-amd64-server-*",
+        "root-device-type": "ebs"
+      },
+      "owners": ["099720109477"],
+      "most_recent": true
+    },
+    "instance_type": "t2.micro",
+    "ssh_username": "ubuntu",
+    "ami_name": "frontdesk-web-{{ timestamp }}",
+    "tags": {
+      "Name": "Frontdesk Web Instance",
+      "BaseImageId": "{{ .SourceAMI }}",
+      "Project": "Frontdesk"
+    }
+  }],
+  "provisioners": [
+    {
+      "type": "shell",
+      "execute_command": "sudo sh -c '{{ .Vars }} {{ .Path }}'",
+      "script": "packer/scripts/01-update.sh",
+      "expect_disconnect": true,
+      "pause_before": "30s",
+      "pause_after": "10s"
+    }
+  ]
+}
