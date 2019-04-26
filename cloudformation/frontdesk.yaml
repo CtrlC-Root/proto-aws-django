@@ -1,0 +1,218 @@
+---
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Frontdesk Web Application
+
+Parameters:
+  KeyName:
+    Description: SSH Public Key
+    Type: AWS::SSM::Parameter::Value<AWS::EC2::KeyPair::KeyName>
+    Default: /Frontdesk/KeyName
+
+  VpcId:
+    Description: VPC ID
+    Type: AWS::SSM::Parameter::Value<AWS::EC2::VPC::Id>
+    Default: /Frontdesk/VpcId
+
+  PrimarySubnetId:
+    Description: Primary Subnet ID
+    Type: AWS::SSM::Parameter::Value<AWS::EC2::Subnet::Id>
+    Default: /Frontdesk/PrimarySubnetId
+
+  SecondarySubnetId:
+    Description: Secondary Subnet ID
+    Type: AWS::SSM::Parameter::Value<AWS::EC2::Subnet::Id>
+    Default: /Frontdesk/SecondarySubnetId
+
+  WebImageId:
+    Description: Web Instance Image ID
+    Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
+    Default: /Frontdesk/WebImageId
+
+  HostedZoneId:
+    Description: Hosted Zone ID
+    Type: AWS::SSM::Parameter::Value<AWS::Route53::HostedZone::Id>
+    Default: /Frontdesk/HostedZoneId
+
+  DomainName:
+    Description: Public Second-Level Domain Name
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /Frontdesk/DomainName
+
+  CertificateArn:
+    Description: Public Domain SSL Certificate
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /Frontdesk/CertificateArn
+
+Resources:
+  # Common Resources
+  ManagementSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow SSH from anywhere
+      VpcId:
+        Ref: VpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+      Tags:
+        - Key: Name
+          Value: Management
+        - Key: Project
+          Value: Frontdesk
+
+  # Web Stack
+  WebSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    DependsOn: LoadBalancerSecurityGroup
+    Properties:
+      GroupDescription: Allow HTTP from load balancer
+      VpcId:
+        Ref: VpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          SourceSecurityGroupId:
+            Ref: LoadBalancerSecurityGroup
+      Tags:
+        - Key: Name
+          Value: Frontdesk Web Instance
+        - Key: Project
+          Value: Frontdesk
+
+  WebInstance:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: t3.micro
+      KeyName:
+        Ref: KeyName
+      ImageId:
+        Ref: WebImageId
+      Tags:
+        - Key: Name
+          Value: Frontdesk Web
+        - Key: Project
+          Value: Frontdesk
+      NetworkInterfaces:
+        - Description: Frontdesk Web Primary Interface
+          AssociatePublicIpAddress: true
+          DeleteOnTermination: true
+          DeviceIndex: 0
+          GroupSet:
+            - Ref: ManagementSecurityGroup
+            - Ref: WebSecurityGroup
+          SubnetId:
+            Ref: PrimarySubnetId
+
+  # Load Balancer
+  LoadBalancerSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      VpcId:
+        Ref: VpcId
+      GroupDescription: Allow HTTPS from anywhere
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 0.0.0.0/0
+      Tags:
+        - Key: Name
+          Value: Frontdesk Load Balancer
+        - Key: Project
+          Value: Frontdesk
+
+  LoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Type: application
+      Scheme: internet-facing
+      SecurityGroups:
+        - Ref: LoadBalancerSecurityGroup
+      Subnets:
+        - Ref: PrimarySubnetId
+        - Ref: SecondarySubnetId
+      Tags:
+        - Key: Name
+          Value: Frontdesk Load Balancer
+        - Key: Project
+          Value: Frontdesk
+
+  WebTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      VpcId:
+        Ref: VpcId
+      HealthCheckPath: /
+      HealthCheckProtocol: HTTP
+      HealthCheckIntervalSeconds: 30
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 2
+      UnhealthyThresholdCount: 2
+      Port: 80
+      Protocol: HTTP
+      TargetType: "instance"
+      Targets:
+        - Id:
+            Ref: WebInstance
+      Tags:
+        - Key: Name
+          Value: Frontdesk Web Instance
+        - Key: Project
+          Value: Frontdesk
+
+  LoadBalancerListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      LoadBalancerArn:
+        Ref: LoadBalancer
+      Port: 443
+      Protocol: HTTPS
+      Certificates:
+        - CertificateArn:
+            Ref: CertificateArn
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn:
+            Ref: WebTargetGroup
+
+  # Domains
+  ApplicationDomain:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId:
+        Ref: HostedZoneId
+      Name:
+        Ref: DomainName
+      Type: A
+      AliasTarget:
+        DNSName:
+          Fn::GetAtt: ["LoadBalancer", "DNSName"]
+        EvaluateTargetHealth: false
+        HostedZoneId:
+          Fn::GetAtt: ["LoadBalancer", "CanonicalHostedZoneID"]
+
+  WebInstanceDomain:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId:
+        Ref: HostedZoneId
+      Name:
+        Fn::Sub: "web.${DomainName}"
+      Type: A
+      TTL: 60
+      ResourceRecords:
+        - Fn::GetAtt: ["WebInstance", "PublicIp"]
+
+Outputs:
+  ApplicationUrl:
+    Description: Web Application Url
+    Value:
+      Fn::Sub: "https://${DomainName}/"
+
+  WebHost:
+    Description: Web Instance
+    Value:
+      Fn::Sub: "web.${DomainName}"
