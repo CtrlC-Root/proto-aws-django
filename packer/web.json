@@ -33,7 +33,7 @@
     {
       "type": "shell",
       "execute_command": "sudo sh -c '{{ .Vars }} {{ .Path }}'",
-      "script": "packer/scripts/02-install-python.sh",
+      "script": "packer/scripts/02-install-python.sh"
     },
     {
       "type": "ansible",
