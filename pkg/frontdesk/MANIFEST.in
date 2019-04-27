@@ -1,5 +1,6 @@
 # templates
 recursive-include frontdesk *.html
+recursive-include packages *.html
 
 # scripts
 include manage.py
