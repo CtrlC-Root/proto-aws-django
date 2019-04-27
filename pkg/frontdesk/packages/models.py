@@ -25,7 +25,7 @@ class Package(models.Model):
 
     carrier = models.CharField(
         max_length=16,
-        choices=[(tag, tag.value) for tag in Carrier],
+        choices=[(tag.value, tag.name) for tag in Carrier],
         help_text="Carrier that shipped the package.")
 
     tracking_number = models.CharField(

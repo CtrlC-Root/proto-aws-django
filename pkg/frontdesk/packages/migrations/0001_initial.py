@@ -23,9 +23,9 @@ class Migration(migrations.Migration):
                     verbose_name='ID')),
                 ('carrier', models.CharField(
                     choices=[
-                        (packages.models.Carrier('USPS'), 'USPS'),
-                        (packages.models.Carrier('UPS'), 'UPS'),
-                        (packages.models.Carrier('FedEx'), 'FedEx')],
+                        ('USPS', 'USPS'),
+                        ('UPS', 'UPS'),
+                        ('FedEx', 'FedEx')],
                     help_text='Carrier that shipped the package.',
                     max_length=16)),
                 ('tracking_number', models.CharField(
