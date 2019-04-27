@@ -19,5 +19,11 @@ setup(
 
     install_requires=[
         'Django >= 2.2.0'
-    ]
+    ],
+
+    entry_points={
+        'console_scripts': {
+            'frontdesk = frontdesk.manage:main'
+        }
+    }
 )
