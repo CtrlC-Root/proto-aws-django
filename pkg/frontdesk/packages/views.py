@@ -1,3 +1,12 @@
-from django.shortcuts import render
+from django.views.generic.list import ListView
+from django.views.generic.detail import DetailView
 
-# Create your views here.
+from .models import Carrier, Package
+
+
+class PackageListView(ListView):
+    model = Package
+
+
+class PackageDetailView(DetailView):
+    model = Package

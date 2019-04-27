@@ -1,0 +1,8 @@
+<h1>Packages</h1>
+<ul>
+{% for package in object_list %}
+    <li>({{ package.created|date }}) {{ package.tracking_number }} via {{ package.carrier }}</li>
+{% empty %}
+    <li>No packages.</li>
+{% endfor %}
+</ul>
