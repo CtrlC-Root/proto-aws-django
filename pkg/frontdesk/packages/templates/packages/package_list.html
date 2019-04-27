@@ -1,6 +1,6 @@
 <h1>Packages</h1>
 <ul>
-{% for package in object_list %}
+{% for package in package_list %}
     <li>
       <a href="{% url 'package-detail' package.id %}">
         {{ package.tracking_number }} via {{ package.carrier }}
