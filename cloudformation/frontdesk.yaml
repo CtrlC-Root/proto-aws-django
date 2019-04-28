@@ -170,11 +170,6 @@ Resources:
       MinSize: 1
       MaxSize: 3
       DesiredCapacity: 2
-      UpdatePolicy:
-        AutoScalingRollingUpdate:
-          MaxBatchSize: 1
-          MinInstancesInService: 2
-          PauseTime: PT5M
       VPCZoneIdentifier:
         - Ref: PrimarySubnetId
         - Ref: SecondarySubnetId
@@ -183,6 +178,11 @@ Resources:
       Tags:
         - Key: Project
           Value: Frontdesk
+    UpdatePolicy:
+      AutoScalingRollingUpdate:
+        MaxBatchSize: 1
+        MinInstancesInService: 2
+        PauseTime: PT5M
 
   # Load Balancer
   LoadBalancerSecurityGroup:
