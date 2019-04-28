@@ -144,31 +144,47 @@ Resources:
         - Key: Project
           Value: Frontdesk
 
-  WebInstance:
-    Type: AWS::EC2::Instance
+  WebLaunchConfiguration:
+    Type: AWS::AutoScaling::LaunchConfiguration
     Properties:
       InstanceType: t3.micro
       KeyName:
         Ref: KeyName
-      ImageId:
-        Ref: WebImageId
       IamInstanceProfile:
         Ref: WebInstanceProfile
+      ImageId:
+        Ref: WebImageId
+      InstanceMonitoring: false
+      AssociatePublicIpAddress: true
+      SecurityGroups:
+        - Ref: ManagementSecurityGroup
+        - Ref: WebSecurityGroup
       Tags:
-        - Key: Name
-          Value: Frontdesk Web
         - Key: Project
           Value: Frontdesk
-      NetworkInterfaces:
-        - Description: Frontdesk Web Primary Interface
-          AssociatePublicIpAddress: true
-          DeleteOnTermination: true
-          DeviceIndex: 0
-          GroupSet:
-            - Ref: ManagementSecurityGroup
-            - Ref: WebSecurityGroup
-          SubnetId:
-            Ref: PrimarySubnetId
+
+  WebAutoScalingGroup:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    DependsOn: WebTargetGroup
+    Properties:
+      LaunchConfigurationName:
+        Ref: WebLaunchConfiguration
+      MinSize: 1
+      MaxSize: 3
+      DesiredCapacity: 2
+      UpdatePolicy:
+        AutoScalingRollingUpdate:
+          MaxBatchSize: 1
+          MinInstancesInService: 2
+          PauseTime: PT5M
+      VPCZoneIdentifier:
+        - Ref: PrimarySubnetId
+        - Ref: SecondarySubnetId
+      TargetGroupArns:
+        - Ref: WebTargetGroup
+      Tags:
+        - Key: Project
+          Value: Frontdesk
 
   # Load Balancer
   LoadBalancerSecurityGroup:
@@ -217,10 +233,7 @@ Resources:
       UnhealthyThresholdCount: 2
       Port: 80
       Protocol: HTTP
-      TargetType: "instance"
-      Targets:
-        - Id:
-            Ref: WebInstance
+      TargetType: instance
       Tags:
         - Key: Name
           Value: Frontdesk Web Instance
@@ -258,25 +271,8 @@ Resources:
         HostedZoneId:
           Fn::GetAtt: ["LoadBalancer", "CanonicalHostedZoneID"]
 
-  WebInstanceDomain:
-    Type: AWS::Route53::RecordSet
-    Properties:
-      HostedZoneId:
-        Ref: HostedZoneId
-      Name:
-        Fn::Sub: "web.${DomainName}"
-      Type: A
-      TTL: 60
-      ResourceRecords:
-        - Fn::GetAtt: ["WebInstance", "PublicIp"]
-
 Outputs:
   ApplicationUrl:
     Description: Web Application Url
     Value:
       Fn::Sub: "https://${DomainName}/"
-
-  WebHost:
-    Description: Web Instance
-    Value:
-      Fn::Sub: "web.${DomainName}"
