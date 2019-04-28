@@ -9,10 +9,11 @@ Deploy a Django application to AWS.
 
 ## Quick Start
 
-Create a python virtualenv, install dependencies, and link utility packages
-into it.
+Create a python virtualenv, install dependencies, and link utility packages.
 
 ```bash
+virtualenv -p $(which python3) env
+source env/bin/activate
 pip install -r requirements.txt
 python pkg/multitool/setup.py develop
 ```

@@ -8,6 +8,8 @@ Create a Python virtualenv, install the project's dependencies, and link the
 project for development.
 
 ```bash
+virtualenv -p $(which python3) env
+source env/bin/activate
 pip install -r requirements.txt
 python setup.py develop
 ```
@@ -19,3 +21,19 @@ frontdesk migrate
 frontdesk createsuperuser
 frontdesk runserver
 ```
+
+## Production
+
+The `production` application provides several management commands accessible
+through the `frontdesk` script that can be useful in production. Run the web
+application using gunicorn through the `run_web` command which accepts most of
+the flags `gunicorn` provides. The Django settings module and WSGI application
+are automatically configured and do not need to be specified.
+
+```bash
+frontdesk run_web -w 4 -b 0.0.0.0
+```
+
+## References
+
+* [Django Management Commands](https://docs.djangoproject.com/en/2.2/howto/custom-management-commands/)
