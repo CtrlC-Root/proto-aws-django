@@ -147,6 +147,7 @@ Resources:
   WebLaunchConfiguration:
     Type: AWS::AutoScaling::LaunchConfiguration
     Properties:
+      LaunchConfigurationName: Frontdesk Web Instance
       InstanceType: t3.micro
       KeyName:
         Ref: KeyName
@@ -159,9 +160,6 @@ Resources:
       SecurityGroups:
         - Ref: ManagementSecurityGroup
         - Ref: WebSecurityGroup
-      Tags:
-        - Key: Project
-          Value: Frontdesk
 
   WebAutoScalingGroup:
     Type: AWS::AutoScaling::AutoScalingGroup
