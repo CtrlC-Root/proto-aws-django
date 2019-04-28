@@ -5,4 +5,3 @@
   become: yes
   roles:
     - role: common
-    - role: python
