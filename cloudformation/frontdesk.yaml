@@ -178,6 +178,7 @@ Resources:
       Tags:
         - Key: Project
           Value: Frontdesk
+          PropagateAtLaunch: true
     UpdatePolicy:
       AutoScalingRollingUpdate:
         MaxBatchSize: 1
