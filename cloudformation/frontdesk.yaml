@@ -147,7 +147,6 @@ Resources:
   WebLaunchConfiguration:
     Type: AWS::AutoScaling::LaunchConfiguration
     Properties:
-      LaunchConfigurationName: Frontdesk Web Instance
       InstanceType: t3.micro
       KeyName:
         Ref: KeyName
