@@ -79,7 +79,7 @@ Resources:
   WebInstanceRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: Text2PrintWebInstance
+      RoleName: FrontdeskWebInstance
       AssumeRolePolicyDocument:
         Version: 2012-10-17
         Statement:
@@ -121,7 +121,7 @@ Resources:
   WebInstanceProfile:
     Type: AWS::IAM::InstanceProfile
     Properties:
-      InstanceProfileName: Text2PrintWebInstance
+      InstanceProfileName: FrontdeskWebInstance
       Roles:
         - Ref: WebInstanceRole
 
