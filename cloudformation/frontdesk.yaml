@@ -173,7 +173,7 @@ Resources:
       VPCZoneIdentifier:
         - Ref: PrimarySubnetId
         - Ref: SecondarySubnetId
-      TargetGroupArns:
+      TargetGroupARNs:
         - Ref: WebTargetGroup
       Tags:
         - Key: Project
