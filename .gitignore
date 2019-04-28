@@ -5,3 +5,6 @@ __pycache__/
 
 # Doit
 .doit.db
+
+# Pex Distributions
+*.pex
