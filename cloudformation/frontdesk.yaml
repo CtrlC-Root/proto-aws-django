@@ -44,6 +44,19 @@ Parameters:
     Default: /Frontdesk/CertificateArn
 
 Resources:
+  # Deployment
+  DeploymentBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      Tags:
+        - Key: Project
+          Value: Frontdesk
+
   # Common Resources
   ManagementSecurityGroup:
     Type: AWS::EC2::SecurityGroup
@@ -63,6 +76,55 @@ Resources:
           Value: Frontdesk
 
   # Web Stack
+  WebInstanceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: Text2PrintWebInstance
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - ec2.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Policies:
+        - PolicyName: AllowReadSecrets
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ssm:GetParameters
+                Resource:
+                  Fn::Sub:
+                    - "arn:aws:ssm:${Region}:${Account}:parameter/Frontdesk/*"
+                    - Region: !Ref "AWS::Region"
+                      Account: !Ref "AWS::AccountId"
+        - PolicyName: AllowGetDeployments
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:ListBucket
+                  - s3:GetBucketLocation
+                Resource:
+                  Fn::Sub: "${DeploymentBucket.Arn}"
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                Resource:
+                  Fn::Sub: "${DeploymentBucket.Arn}/*"
+
+  WebInstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      InstanceProfileName: Text2PrintWebInstance
+      Roles:
+        - Ref: WebInstanceRole
+
   WebSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     DependsOn: LoadBalancerSecurityGroup
@@ -90,6 +152,8 @@ Resources:
         Ref: KeyName
       ImageId:
         Ref: WebImageId
+      IamInstanceProfile:
+        Ref: WebInstanceProfile
       Tags:
         - Key: Name
           Value: Frontdesk Web
