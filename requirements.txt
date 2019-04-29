@@ -15,7 +15,6 @@ doit==0.31.1
 idna==2.8
 Jinja2==2.10.1
 jmespath==0.9.4
-MacFSEvents==0.8.1
 MarkupSafe==1.1.1
 paramiko==2.4.2
 pex==1.6.6
