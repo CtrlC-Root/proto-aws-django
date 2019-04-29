@@ -74,6 +74,7 @@ Tools:
 
 * [DoIt](http://pydoit.org/)
 * [Pex](https://pex.readthedocs.io/en/stable/index.html)
+* [Vagrant VBGuest](https://github.com/dotless-de/vagrant-vbguest)
 
 Frameworks and libraries:
 
