@@ -6,10 +6,5 @@ set -e
 # configure dpkg, apt, apt-get to use non-interactive front-end
 export DEBIAN_FRONTEND=noninteractive
 
-# update packages
-apt-get update
-apt-get -y upgrade
-apt-get -y dist-upgrade
-
-# restart the machine
-reboot
+# install python virtualenv support
+apt-get -y install python3-virtualenv virtualenv

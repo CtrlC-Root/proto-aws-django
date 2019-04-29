@@ -25,7 +25,12 @@
     {
       "type": "shell",
       "execute_command": "sudo sh -c '{{ .Vars }} {{ .Path }}'",
-      "script": "packer/scripts/01-update.sh",
+      "script": "scripts/01-update.sh",
+    },
+    {
+      "type": "shell",
+      "execute_command": "sudo sh -c '{{ .Vars }} {{ .Path }}'",
+      "inline": ["reboot"],
       "expect_disconnect": true,
       "pause_before": "30s",
       "pause_after": "10s"
@@ -33,7 +38,7 @@
     {
       "type": "shell",
       "execute_command": "sudo sh -c '{{ .Vars }} {{ .Path }}'",
-      "script": "packer/scripts/02-install-python.sh"
+      "script": "scripts/02-install-python.sh"
     },
     {
       "type": "ansible",

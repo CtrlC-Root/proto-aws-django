@@ -4,7 +4,11 @@ __pycache__/
 *$py.class
 
 # Doit
-.doit.db
+.doit.*
 
 # Pex Distributions
 *.pex
+
+# Vagrant
+.vagrant
+*-console.log

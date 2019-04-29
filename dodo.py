@@ -1,4 +1,5 @@
 import os
+from itertools import chain
 
 from multitool import (
     find_files,
@@ -8,7 +9,9 @@ from multitool import (
 
 def task_build_web_ami():
     return {
-        'file_dep': find_files('packer'),
+        'file_dep': list(chain(
+            find_files('packer'),
+            find_files('scripts'))),
         'actions': [
             'packer validate packer/web.json',
             'packer build packer/web.json'
