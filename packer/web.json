@@ -25,7 +25,7 @@
     {
       "type": "shell",
       "execute_command": "sudo sh -c '{{ .Vars }} {{ .Path }}'",
-      "script": "scripts/01-update.sh",
+      "script": "scripts/01-update.sh"
     },
     {
       "type": "shell",
