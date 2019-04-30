@@ -97,6 +97,7 @@ Resources:
               - Effect: Allow
                 Action:
                   - ssm:UpdateInstanceInformation
+                  - ssm:ListAssociations
                   - ssmmessages:CreateControlChannel
                   - ssmmessages:CreateDataChannel
                   - ssmmessages:OpenControlChannel
