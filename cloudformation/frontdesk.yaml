@@ -127,7 +127,7 @@ Resources:
                 Action:
                   - ec2:DescribeInstances
                 Resource: "*"
-        - PolicyName: AllowDescribeStack
+        - PolicyName: AllowDescribeAndSignalStack
           PolicyDocument:
             Version: 2012-10-17
             Statement:
@@ -140,6 +140,7 @@ Resources:
               - Effect: Allow
                 Action:
                   - cloudformation:DescribeStacks
+                  - cloudformation:SignalResource
                 Resource:
                   Fn::Sub:
                     - "arn:aws:cloudformation:${Region}:${Account}:stack/${Name}/*"
@@ -163,8 +164,8 @@ Resources:
         Ref: VpcId
       SecurityGroupIngress:
         - IpProtocol: tcp
-          FromPort: 80
-          ToPort: 80
+          FromPort: 8000
+          ToPort: 8000
           SourceSecurityGroupId:
             Ref: LoadBalancerSecurityGroup
       Tags:
@@ -212,6 +213,13 @@ Resources:
         MaxBatchSize: 1
         MinInstancesInService: 2
         PauseTime: PT5M
+        WaitOnResourceSignals: true
+        SuspendProcesses:
+          - HealthCheck
+          - ReplaceUnhealthy
+          - AZRebalance
+          - AlarmNotification
+          - ScheduledActions
 
   # Load Balancer
   LoadBalancerSecurityGroup:
@@ -258,7 +266,7 @@ Resources:
       HealthCheckTimeoutSeconds: 5
       HealthyThresholdCount: 2
       UnhealthyThresholdCount: 2
-      Port: 80
+      Port: 8000
       Protocol: HTTP
       TargetType: instance
       Tags:
