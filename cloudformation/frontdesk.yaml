@@ -124,6 +124,7 @@ Resources:
               - Effect: Allow
                 Action:
                   - ec2:DescribeInstances
+                Resource: "*"
         - PolicyName: AllowDescribeStack
           PolicyDocument:
             Version: 2012-10-17
