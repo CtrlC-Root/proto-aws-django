@@ -27,6 +27,19 @@ def get_instance_id():
     return response.text
 
 
+def configure_service(name, run_and_enable):
+    systemctl = '/bin/systemctl'
+    unit = '{0}.service'.format(name)
+
+    if run_and_enable:
+        subprocess.run([systemctl, 'start', unit], check=True)
+        subprocess.run([systemctl, 'enable', unit], check=True)
+
+    else:
+        subprocess.run([systemctl, 'stop', unit], check=True)
+        subprocess.run([systemctl, 'disable', unit], check=True)
+
+
 def get_instance_tags(session, instance_id):
     ec2 = session.resource('ec2')
     instance = ec2.Instance(instance_id)
@@ -70,6 +83,9 @@ def main():
     tags = get_instance_tags(session, get_instance_id())
     stack_name = tags['aws:cloudformation:stack-name']
 
+    # stop running services
+    configure_service(SYSTEMD_SERVICE, False)
+
     try:
         # locate the deployment bucket
         outputs = get_stack_outputs(session, stack_name)
@@ -102,16 +118,14 @@ def main():
         for key, value in env_vars.items():
             os.environ[key] = value
 
-        # run migrations
+        # run database migrations
         subprocess.run([application, 'migrate'], check=True)
 
         # production checks
         subprocess.run([application, 'check', '--deploy'], check=True)
 
         # enable and start the service
-        service = '{0}.service'.format(SYSTEMD_SERVICE)
-        subprocess.run(['/bin/systemctl', 'enable', service], check=True)
-        subprocess.run(['/bin/systemctl', 'start', service], check=True)
+        configure_service(SYSTEMD_SERVICE, True)
 
     except Exception as e:
         if args.signal_asg:
