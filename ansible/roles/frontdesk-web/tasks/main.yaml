@@ -1,0 +1,43 @@
+---
+- name: create empty environment file
+  file:
+    path: /etc/default/frontdesk
+    state: touch
+    owner: root
+    group: root
+    mode: 0640
+
+- name: install systemd service
+  copy:
+    src: etc/systemd/system/frontdesk-web.service
+    dest: /etc/systemd/system/frontdesk-web.service
+    owner: root
+    group: root
+    mode: 0644
+
+- name: create folders
+  file:
+    state: directory
+    path: "{{ item }}"
+    owner: root
+    group: root
+    mode: 0755
+  loop:
+    - /opt/frontdesk
+    - /opt/frontdesk/app
+
+- name: create update script
+  copy:
+    src: opt/frontdesk/update.py
+    dest: opt/frontdesk/update.py
+    owner: root
+    group: root
+    mode: 0755
+
+- name: install per-instance config script
+  copy:
+    src: var/lib/cloud/scripts/per-instance/frontdesk-web.sh
+    dest: /var/lib/cloud/scripts/per-instance/frontdesk-web.sh
+    owner: root
+    group: root
+    mode: 0755

@@ -1,0 +1,10 @@
+[Unit]
+Description=Frontdesk Web Server
+
+[Service]
+Type=simple
+EnvironmentFile=/etc/default/frontdesk
+ExecStart=/bin/bash -c "${FRONTDESK_APP} run_web --workers 2 --bind 0.0.0.0:8000"
+
+[Install]
+WantedBy=multi-user.target
