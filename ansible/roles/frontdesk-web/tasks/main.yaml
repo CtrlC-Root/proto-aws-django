@@ -29,7 +29,7 @@
 - name: create update script
   copy:
     src: opt/frontdesk/update.py
-    dest: opt/frontdesk/update.py
+    dest: /opt/frontdesk/update.py
     owner: root
     group: root
     mode: 0755
