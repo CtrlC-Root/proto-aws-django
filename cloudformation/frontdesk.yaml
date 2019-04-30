@@ -96,7 +96,9 @@ Resources:
             Statement:
               - Effect: Allow
                 Action:
+                  - ssm:GetParameter
                   - ssm:GetParameters
+                  - ssm:GetParametersByPath
                 Resource:
                   Fn::Sub:
                     - "arn:aws:ssm:${Region}:${Account}:parameter/Frontdesk/*"
@@ -135,6 +137,15 @@ Resources:
                   - cloudformation:DescribeStackResources
                 Resource:
                   Fn::Sub: "${AWS::StackId}"
+              - Effect: Allow
+                Action:
+                  - cloudformation:DescribeStacks
+                Resource:
+                  Fn::Sub:
+                    - "arn:aws:cloudformation:${Region}:${Account}:stack/${Name}/*"
+                    - Region: !Ref "AWS::Region"
+                      Account: !Ref "AWS::AccountId"
+                      Name: !Ref "AWS::StackName"
 
   WebInstanceProfile:
     Type: AWS::IAM::InstanceProfile
