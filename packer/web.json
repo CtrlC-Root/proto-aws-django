@@ -25,15 +25,15 @@
     {
       "type": "shell",
       "execute_command": "sudo sh -c '{{ .Vars }} {{ .Path }}'",
-      "script": "scripts/01-update.sh"
+      "script": "scripts/01-update.sh",
+      "pause_before": "15s"
     },
     {
       "type": "shell",
       "execute_command": "sudo sh -c '{{ .Vars }} {{ .Path }}'",
       "inline": ["reboot"],
       "expect_disconnect": true,
-      "pause_before": "30s",
-      "pause_after": "10s"
+      "pause_after": "15s"
     },
     {
       "type": "shell",
