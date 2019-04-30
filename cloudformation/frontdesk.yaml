@@ -90,6 +90,26 @@ Resources:
             Action:
               - sts:AssumeRole
       Policies:
+        - PolicyName: AllowSystemManager
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ssm:UpdateInstanceInformation
+                  - ssmmessages:CreateControlChannel
+                  - ssmmessages:CreateDataChannel
+                  - ssmmessages:OpenControlChannel
+                  - ssmmessages:OpenDataChannel
+                Resource: "*"
+              - Effect: Allow
+                Action:
+                  - s3:GetEncryptionConfiguration
+                Resource: "*"
+              - Effect: Allow
+                Action:
+                  - kms:Decrypt
+                Resource: "*"
         - PolicyName: AllowGetParameters
           PolicyDocument:
             Version: 2012-10-17
