@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 
 import os
+import sys
+import argparse
 import traceback
 import subprocess
 from functools import reduce
@@ -56,6 +58,11 @@ def signal_stack_asg(session, stack_name, asg_resource_name, success):
 
 
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('signal-asg', action='store_true')
+
+    args = parser.parse_args()
+
     # create the shared boto session
     session = boto3.session.Session(region_name=get_region())
 
@@ -85,12 +92,15 @@ def main():
         # write the environment file
         env_vars = {
             'FRONTDESK_APP': application,
-            'SECURE_KEY': get_ssm_parameter('SecureKey'),
-            'ALLOWED_HOSTS': get_ssm_parameter('DomainName')}
+            'SECRET_KEY': get_ssm_parameter(session, 'SecretKey')}
 
         with open(SYSTEMD_ENV_FILE, 'w') as env_file:
             for key, value in env_vars.items():
                 env_file.write('{0}="{1}"\n'.format(key, value))
+
+        # export environment variables
+        for key, value in env_vars.items():
+            os.environ[key] = value
 
         # run migrations
         subprocess.run([application, 'migrate'], check=True)
@@ -104,12 +114,14 @@ def main():
         subprocess.run(['/bin/systemctl', 'start', service], check=True)
 
     except Exception as e:
-        print("Sending failure signal to ASG")
-        signal_stack_asg(session, stack_name, STACK_ASG, False)
+        if args.signal_asg:
+            print("Sending failure signal to ASG")
+            signal_stack_asg(session, stack_name, STACK_ASG, False)
 
         traceback.print_exc()
+        sys.exit(1)
 
-    else:
+    if args.signal_asg:
         print("Sending success signal to ASG")
         signal_stack_asg(session, stack_name, STACK_ASG, True)
 
