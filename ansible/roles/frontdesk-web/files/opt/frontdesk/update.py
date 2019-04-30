@@ -85,8 +85,8 @@ def main():
 
         # enable and start the service
         service = '{0}.service'.format(SYSTEMD_SERVICE)
-        subprocess.run(['/bin/systemd', 'enable', service], check=True)
-        subprocess.run(['/bin/systemd', 'start', service], check=True)
+        subprocess.run(['/bin/systemctl', 'enable', service], check=True)
+        subprocess.run(['/bin/systemctl', 'start', service], check=True)
 
     except Exception as e:
         print("Sending failure signal to ASG")
