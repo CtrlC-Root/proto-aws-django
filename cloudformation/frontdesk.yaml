@@ -269,6 +269,9 @@ Resources:
       Port: 8000
       Protocol: HTTP
       TargetType: instance
+      TargetGroupAttributes:
+        - Key: deregistration_delay.timeout_seconds
+          Value: 15
       Tags:
         - Key: Name
           Value: Frontdesk Web Instance
