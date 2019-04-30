@@ -14,6 +14,13 @@ pip install -r requirements.txt
 python setup.py develop
 ```
 
+Configure development settings:
+
+```bash
+export DEBUG="True"
+export SECURE_KEY="insecure_local_dev"
+```
+
 Use the provided `frontdesk` script in place of the usual `manage.py`:
 
 ```bash
@@ -23,6 +30,13 @@ frontdesk runserver
 ```
 
 ## Production
+
+Configure production settings:
+
+```bash
+export SECURE_KEY="something_secure"
+export ALLOWED_HOSTS="example.com,example.net"
+```
 
 The `production` application provides several management commands accessible
 through the `frontdesk` script that can be useful in production. Run the web
