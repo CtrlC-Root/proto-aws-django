@@ -90,7 +90,7 @@ Resources:
             Action:
               - sts:AssumeRole
       Policies:
-        - PolicyName: AllowReadSecrets
+        - PolicyName: AllowGetParameters
           PolicyDocument:
             Version: 2012-10-17
             Statement:
@@ -117,6 +117,23 @@ Resources:
                   - s3:GetObject
                 Resource:
                   Fn::Sub: "${DeploymentBucket.Arn}/*"
+        - PolicyName: AllowDescribeInstances
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ec2:DescribeInstances
+        - PolicyName: AllowDescribeStack
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - cloudformation:DescribeStackResource
+                  - cloudformation:DescribeStackResources
+                Resource:
+                  Fn::Sub: "${AWS::StackId}"
 
   WebInstanceProfile:
     Type: AWS::IAM::InstanceProfile
@@ -274,3 +291,8 @@ Outputs:
     Description: Web Application Url
     Value:
       Fn::Sub: "https://${DomainName}/"
+
+  DeploymentBucket:
+    Description: Deployment Bucket Name
+    Value:
+      Ref: DeploymentBucket
