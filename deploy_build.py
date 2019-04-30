@@ -6,6 +6,7 @@ import time
 import argparse
 
 import boto3
+import fabric
 
 STACK_NAME = 'Frontdesk'
 STACK_ASG = 'WebAutoScalingGroup'
@@ -57,11 +58,12 @@ def main():
     response = autoscaling.describe_auto_scaling_groups(
         AutoScalingGroupNames=[asg_name])
 
+    ec2 = boto3.resource('ec2')
     instance_data = response['AutoScalingGroups'][0]['Instances']
-    instance_ids = [d['InstanceId'] for d in instance_data]
+    instances = [ec2.Instance(d['InstanceId']) for d in instance_data]
 
     # update the build parameter
-    print("Set {0}: {1}".format(BUILD_PARAMETER, application))
+    print("Set '{0}' to '{1}'".format(BUILD_PARAMETER, application))
     ssm = boto3.client('ssm')
     ssm.put_parameter(
         Name=BUILD_PARAMETER,
@@ -70,20 +72,21 @@ def main():
         Overwrite=True)
 
     # update instances sequentially
-    for instance_id in instance_ids:
+    for instance in instances:
         # standby the instance
-        print("Moving instance to standby: {0}".format(instance_id))
+        print("Moving instance {0} to standby".format(instance.id))
         autoscaling.enter_standby(
             AutoScalingGroupName=asg_name,
-            InstanceIds=[instance_id],
-            ShouldDecrementDesiredCapacity=False)
+            InstanceIds=[instance.id],
+            ShouldDecrementDesiredCapacity=True)
 
         print("Waiting...", end='')
-        time.sleep(5)
+        sys.stdout.flush()
+        time.sleep(3)
 
         while True:
             response = autoscaling.describe_auto_scaling_instances(
-                InstanceIds=[instance_id])
+                InstanceIds=[instance.id])
 
             state = response['AutoScalingInstances'][0]['LifecycleState']
             if state == 'Standby':
@@ -95,49 +98,44 @@ def main():
                 sys.exit(1)
 
             print(".", end='')
+            sys.stdout.flush()
             time.sleep(1)
 
-        # run the update script on the instance
-        print("Updating instance: {0}".format(instance_id))
-        response = ssm.send_command(
-            InstanceIds=[instance_id],
-            DocumentName='AWS-RunShellScript',
-            Comment='Update frontdesk web app',
-            Parameters={'commands': ['/opt/frontdesk/update.py']})
+        # connect to the instance and run the update script
+        print("Updating instance...")
+        connection = fabric.Connection(instance.public_ip_address, user='ubuntu')
+        result = connection.run('sudo python3 /opt/frontdesk/update.py')
 
-        command_id = response['Command']['CommandId']
+        # resume the instance
+        print("Moving instance {0} to service pool".format(instance.id))
+        autoscaling.exit_standby(
+            AutoScalingGroupName=asg_name,
+            InstanceIds=[instance.id])
 
-        # wait for command to finish running
         print("Waiting...", end='')
-        time.sleep(5)
+        sys.stdout.flush()
+        time.sleep(3)
 
         while True:
-            response = ssm.get_command_invocation(
-                CommandId=command_id,
-                InstanceId=instance_id)
+            response = autoscaling.describe_auto_scaling_instances(
+                InstanceIds=[instance.id])
 
-            status = response['Status']
-            if status == 'Success':
+            state = response['AutoScalingInstances'][0]['LifecycleState']
+            if state == 'InService':
                 print("OK")
                 break
 
-            elif status in ['Cancelled', 'TimedOut', 'Failed']:
-                print("FAILED\n{0}".format(response['StatusDetail']))
+            elif state != 'Pending':
+                print("FAILED\n{0}".format(state))
                 sys.exit(1)
 
             print(".", end='')
+            sys.stdout.flush()
             time.sleep(1)
-
-        # resume the instance
-        autoscaling.exit_standby(
-            AutoScalingGroupName=asg_name,
-            InstanceIds=[instance_id])
 
     # resume autoscaling processes
     print("Resume {0} processes".format(asg_name))
-    autoscaling.resume_processes(
-        AutoScalingGroupName=asg_name,
-        ScalingProcesses=ASG_PROCESSES)
+    autoscaling.resume_processes(AutoScalingGroupName=asg_name)
 
 
 if __name__ == '__main__':
