@@ -262,7 +262,7 @@ Resources:
         Ref: VpcId
       HealthCheckPath: /
       HealthCheckProtocol: HTTP
-      HealthCheckIntervalSeconds: 30
+      HealthCheckIntervalSeconds: 5
       HealthCheckTimeoutSeconds: 5
       HealthyThresholdCount: 2
       UnhealthyThresholdCount: 2
