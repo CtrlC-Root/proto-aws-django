@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import os
+import sys
 import time
 import argparse
 
@@ -70,15 +71,34 @@ def main():
 
     # update instances sequentially
     for instance_id in instance_ids:
-        print("Updating instance: {0}".format(instance_id))
-
         # standby the instance
+        print("Moving instance to standby: {0}".format(instance_id))
         autoscaling.enter_standby(
             AutoScalingGroupName=asg_name,
             InstanceIds=[instance_id],
             ShouldDecrementDesiredCapacity=False)
 
+        print("Waiting...", end='')
+        time.sleep(5)
+
+        while True:
+            response = autoscaling.describe_auto_scaling_instances(
+                InstanceIds=[instance_id])
+
+            state = response['AutoScalingInstances'][0]['LifecycleState']
+            if state == 'Standby':
+                print("OK")
+                break
+
+            elif state != 'EnteringStandby':
+                print("FAILED\n{0}".format(state))
+                sys.exit(1)
+
+            print(".", end='')
+            time.sleep(1)
+
         # run the update script on the instance
+        print("Updating instance: {0}".format(instance_id))
         response = ssm.send_command(
             InstanceIds=[instance_id],
             DocumentName='AWS-RunShellScript',
@@ -86,23 +106,24 @@ def main():
             Parameters={'commands': ['/opt/frontdesk/update.py']})
 
         command_id = response['Command']['CommandId']
-        time.sleep(1)
 
         # wait for command to finish running
-        print("Wait for {0} to finish...".format(command_id))
+        print("Waiting...", end='')
+        time.sleep(5)
+
         while True:
             response = ssm.get_command_invocation(
                 CommandId=command_id,
                 InstanceId=instance_id)
 
             status = response['Status']
-            if status in ['Cancelled', 'TimedOut', 'Failed']:
-                print("FAILED\n{0}".format(response['StatusDetail']))
-                break
-
-            elif status == 'Success':
+            if status == 'Success':
                 print("OK")
                 break
+
+            elif status in ['Cancelled', 'TimedOut', 'Failed']:
+                print("FAILED\n{0}".format(response['StatusDetail']))
+                sys.exit(1)
 
             print(".", end='')
             time.sleep(1)
