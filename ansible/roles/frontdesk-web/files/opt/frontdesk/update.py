@@ -39,7 +39,10 @@ def get_stack_outputs(session, stack_name):
 
 def get_ssm_parameter(session, parameter_name):
     client = session.client('ssm')
-    response = client.get_parameter(Name=parameter_name, WithDecryption=True)
+    response = client.get_parameter(
+        Name='/Frontdesk/{0}'.format(parameter_name),
+        WithDecryption=True)
+
     return response['Parameter']['Value']
 
 
@@ -68,7 +71,7 @@ def main():
         bucket = s3.Bucket(outputs['DeploymentBucket'])
 
         # download the application
-        filename = get_ssm_parameter(session, '/Frontdesk/ApplicationBuild')
+        filename = get_ssm_parameter(session, 'ApplicationBuild')
         object = bucket.Object(filename)
 
         # download the application
@@ -80,8 +83,20 @@ def main():
         os.chmod(application, 0o755)
 
         # write the environment file
+        env_vars = {
+            'FRONTDESK_APP': application,
+            'SECURE_KEY': get_ssm_parameter('SecureKey'),
+            'ALLOWED_HOSTS': get_ssm_parameter('DomainName')}
+
         with open(SYSTEMD_ENV_FILE, 'w') as env_file:
-            env_file.write('FRONTDESK_APP="{0}"\n'.format(application))
+            for key, value in env_vars.items():
+                env_file.write('{0}="{1}"\n'.format(key, value))
+
+        # run migrations
+        subprocess.run([application, 'migrate'], check=True)
+
+        # production checks
+        subprocess.run([application, 'check', '--deploy'], check=True)
 
         # enable and start the service
         service = '{0}.service'.format(SYSTEMD_SERVICE)
