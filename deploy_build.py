@@ -104,7 +104,7 @@ def main():
         # connect to the instance and run the update script
         print("Updating instance...")
         connection = fabric.Connection(instance.public_ip_address, user='ubuntu')
-        result = connection.run('sudo python3 /opt/frontdesk/update.py')
+        result = connection.run('sudo -H python3 /opt/frontdesk/update.py')
 
         # resume the instance
         print("Moving instance {0} to service pool".format(instance.id))
