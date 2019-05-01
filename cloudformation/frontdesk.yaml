@@ -192,13 +192,9 @@ Resources:
             Statement:
               - Effect: Allow
                 Action:
+                  - cloudformation:DescribeStacks
                   - cloudformation:DescribeStackResource
                   - cloudformation:DescribeStackResources
-                Resource:
-                  Fn::Sub: "${AWS::StackId}"
-              - Effect: Allow
-                Action:
-                  - cloudformation:DescribeStacks
                   - cloudformation:SignalResource
                 Resource:
                   Fn::Sub:
