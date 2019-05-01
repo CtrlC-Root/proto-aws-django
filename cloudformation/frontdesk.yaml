@@ -202,6 +202,19 @@ Resources:
                     - Region: !Ref "AWS::Region"
                       Account: !Ref "AWS::AccountId"
                       Name: !Ref "AWS::StackName"
+        - PolicyName: AllowDescribeRdsInstances
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - rds:DescribeDBInstances
+                Resource:
+                  Fn::Sub:
+                    - "arn:aws:rds:${Region}:${Account}:db:${DBInstance}"
+                    - Region: !Ref "AWS::Region"
+                      Account: !Ref "AWS::AccountId"
+                      DBInstance: !Ref DatabaseInstance
 
   WebInstanceProfile:
     Type: AWS::IAM::InstanceProfile
