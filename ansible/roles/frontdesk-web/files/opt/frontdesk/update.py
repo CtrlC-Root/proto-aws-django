@@ -13,6 +13,7 @@ import requests
 
 METADATA_URL = 'http://169.254.169.254/latest/meta-data'
 STACK_ASG = 'WebAutoScalingGroup'
+STACK_DBI = 'DatabaseInstance'
 SYSTEMD_ENV_FILE = '/etc/default/frontdesk'
 SYSTEMD_SERVICE = 'frontdesk-web'
 
@@ -50,6 +51,15 @@ def get_stack_outputs(session, stack_name):
     cloudformation = session.resource('cloudformation')
     stack = cloudformation.Stack(stack_name)
     return {i['OutputKey']: i['OutputValue'] for i in stack.outputs}
+
+
+def get_stack_resource_id(session, stack_name, logical_id):
+    cloudformation = session.client('cloudformation')
+    response = cloudformation.describe_stack_resource(
+        StackName=stack_name,
+        LogicalResourceId=logical_id)
+
+    return response['StackResourceDetail']['PhysicalResourceId']
 
 
 def get_ssm_parameter(session, parameter_name):
@@ -105,10 +115,28 @@ def main():
         object.download_file(application)
         os.chmod(application, 0o755)
 
+        # retrieve the database settings
+        rds = session.client('rds')
+        dbinstance_id = get_stack_resource_id(session, stack_name, STACK_DBI)
+        response = rds.describe_db_instances(
+            DBInstanceIdentifier=dbinstance_id)
+
+        instance_data = response['DBInstances'][0]
+        db_name = instance_data['DBName']
+        db_user = instance_data['MasterUsername']
+        db_pass = get_ssm_parameter(session, 'DatabaseMasterPassword')
+        db_host = instance_data['Endpoint']['Address']
+        db_port = instance_data['Endpoint']['Port']
+
         # write the environment file
         env_vars = {
             'FRONTDESK_APP': application,
-            'SECRET_KEY': get_ssm_parameter(session, 'SecretKey')}
+            'SECRET_KEY': get_ssm_parameter(session, 'SecretKey'),
+            'DB_NAME': db_name,
+            'DB_USER': db_user,
+            'DB_PASS': db_pass,
+            'DB_HOST': db_host,
+            'DB_PORT': str(db_port)}
 
         with open(SYSTEMD_ENV_FILE, 'w') as env_file:
             for key, value in env_vars.items():
