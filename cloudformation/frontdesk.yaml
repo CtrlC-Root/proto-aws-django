@@ -252,8 +252,9 @@ Resources:
   WebAutoScalingGroup:
     Type: AWS::AutoScaling::AutoScalingGroup
     DependsOn:
-      - WebTargetGroup
       - DeploymentBucket
+      - DatabaseInstance
+      - WebTargetGroup
     Properties:
       LaunchConfigurationName:
         Ref: WebLaunchConfiguration
