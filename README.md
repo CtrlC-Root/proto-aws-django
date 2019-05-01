@@ -79,3 +79,7 @@ Tools:
 Frameworks and libraries:
 
 * [Boto3](https://boto3.amazonaws.com/v1/documentation/api/latest/index.html)
+
+CloudFormation:
+
+* [SSM Secure String](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/dynamic-references.html#dynamic-references-ssm-secure-strings)
