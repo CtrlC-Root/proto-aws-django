@@ -44,6 +44,65 @@ Parameters:
     Default: /Frontdesk/CertificateArn
 
 Resources:
+  # Database
+  DatabaseSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    DependsOn: WebSecurityGroup
+    Properties:
+      GroupDescription: Allow PSQL from Web instances
+      VpcId:
+        Ref: VpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 5432
+          ToPort: 5432
+          SourceSecurityGroupId:
+            Ref: WebSecurityGroup
+        - IpProtocol: tcp
+          FromPort: 5432
+          ToPort: 5432
+          SourceSecurityGroupId:
+            Ref: WebSecurityGroup
+      Tags:
+        - Key: Name
+          Value: Database
+        - Key: Project
+          Value: Frontdesk
+
+  DatabaseSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: Frontdesk Database
+      SubnetIds:
+        - Ref: PrimarySubnetId
+        - Ref: SecondarySubnetId
+      Tags:
+        - Key: Project
+          Value: Frontdesk
+
+  DatabaseInstance:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      AllocatedStorage: 5
+      AllowMajorVersionUpgrade: false
+      CopyTagsToSnapshot: true
+      DBInstanceClass: db.t2.micro
+      Engine: postgres
+      EngineVersion: 11.2
+      Port: 5432
+      DBName: frontdesk
+      MasterUsername: master
+      MasterUserPassword: '{{resolve:ssm-secure:/Frontdesk/DatabaseMasterPassword:1}}'
+      DBSubnetGroupName:
+        Ref: DatabaseSubnetGroup
+      VPCSecurityGroups:
+        - Fn::GetAtt: ["DatabaseSecurityGroup", "GroupId"]
+      Tags:
+        - Key: Name
+          Value: Frontdesk
+        - Key: Project
+          Value: Frontdesk
+
   # Deployment
   DeploymentBucket:
     Type: AWS::S3::Bucket
