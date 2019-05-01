@@ -19,5 +19,6 @@ Vagrant.configure("2") do |config|
     web.vm.provision "shell", path: "scripts/03-local-dev.sh"
     web.vm.provision "file", source: "~/.aws/config", destination: ".aws/config"
     web.vm.provision "file", source: "~/.aws/credentials", destination: ".aws/credentials"
+    web.vm.network :forwarded_port, guest: 5432, host: 5432 # postgres
   end
 end
