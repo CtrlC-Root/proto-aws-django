@@ -10,24 +10,13 @@ updates.
 * Vagrant
 * Packer
 
-## Quick Start
-
-Create a python virtualenv, install dependencies, and link utility packages.
-
-```bash
-virtualenv -p $(which python3) env
-source env/bin/activate
-pip install -r requirements.txt
-```
-
 ## Vagrant
-
-TODO: why this matters, python version
 
 Create and provision the virtual machine.
 
 ```bash
 vagrant up
+vagrant reload
 ```
 
 The virtual machine copies your `~/.aws/config` and `~/.aws/credentials` files
@@ -39,26 +28,69 @@ ssh-add
 vagrant ssh -- -A
 ```
 
-Lastly you need to navigate to the `/vagrant` folder which is synchronized
-with the top-level project folder.
+Navigate to the `/vagrant` folder which is synchronized with the top-level
+project folder.
 
 ```bash
 cd /vagrant
 ```
 
-Now you can follow the regular environment setup instructions from above.
+Create a python virtualenv and install dependencies.
+
+```bash
+virtualenv -p $(which python3) env
+source env/bin/activate
+pip install -r requirements.txt
+```
+
+## Provision
+
+TODO:
+
+* Locate or create VPC and two Subnets
+* Locate or create a Route53 hosted zone
+* Locate or create a wildcard Certificate
+* Build the web AMI
+* Build the application
+* Set SSM parameters
+* Create stack
+* Upload application to deployment bucket (before ASG is created)
+* Verify application works
+
+## Create Build
+
+Update the `frontdesk` application and the version in `setup.py` to reflect the
+changes made. Create a build:
+
+```bash
+./create_build.py --project-path pkg/frontdesk
+```
+
+## Deploy Build
+
+Deploy a build to the web instances in the ASG one at a time.
+
+```bash
+./deploy_build.py --app-build ./frontdesk-0.1.pex
+```
+
+## Deprovision
+
+TODO:
+
+* Delete content of deployment bucket
+* Delete stack
+* Delete SSM parameters
+* Deregister AMIs
+* Delete AMI snapshots
 
 ## References
 
-Tools:
+Tools and frameworks:
 
 * [Pex](https://pex.readthedocs.io/en/stable/index.html)
-* [Vagrant VBGuest](https://github.com/dotless-de/vagrant-vbguest)
-
-Frameworks and libraries:
-
 * [Boto3](https://boto3.amazonaws.com/v1/documentation/api/latest/index.html)
 
-CloudFormation:
+AWS:
 
 * [SSM Secure String](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/dynamic-references.html#dynamic-references-ssm-secure-strings)
