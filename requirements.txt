@@ -8,6 +8,8 @@ cffi==1.12.3
 colorama==0.3.9
 cryptography==2.6.1
 docutils==0.14
+fabric==2.4.0
+invoke==1.2.0
 Jinja2==2.10.1
 jmespath==0.9.4
 MarkupSafe==1.1.1
