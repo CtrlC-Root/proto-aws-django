@@ -12,11 +12,13 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 
 import os
 
-
+DEBUG = (os.environ.get('DEBUG', 'False').lower() == 'true')
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = os.environ.get('SECRET_KEY')
-DEBUG = (os.environ.get('DEBUG', 'False').lower() == 'true')
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '*').split(',')
+
+if DEBUG and not SECRET_KEY:
+    SECRET_KEY = "insecure_dev_key"
 
 INSTALLED_APPS = [
     'django.contrib.admin',
