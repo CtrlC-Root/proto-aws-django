@@ -131,7 +131,7 @@ changes made. Create a build:
 
 ## Deploy Build
 
-Deploy a build to:
+Deploy a build:
 
 ```bash
 ./deploy_build.py --app-build ./frontdesk-0.1.pex
