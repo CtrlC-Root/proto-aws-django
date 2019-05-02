@@ -35,8 +35,3 @@ class Package(models.Model):
     created = models.DateTimeField(
         default=timezone.now,
         help_text="Tracking label created.")
-
-    expected = models.DateTimeField(
-        null=True,
-        blank=True,
-        help_text="Estimated delivery date.")

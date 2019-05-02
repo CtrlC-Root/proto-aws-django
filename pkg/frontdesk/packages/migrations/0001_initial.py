@@ -34,10 +34,6 @@ class Migration(migrations.Migration):
                 ('created', models.DateTimeField(
                     default=django.utils.timezone.now,
                     help_text='Tracking label created.')),
-                ('expected', models.DateTimeField(
-                    blank=True,
-                    help_text='Estimated delivery date.',
-                    null=True)),
             ],
             options={
                 'ordering': ['-created'],
