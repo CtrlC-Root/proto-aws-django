@@ -94,7 +94,7 @@ if __name__ == '__main__':
     parser.add_argument(
         '--output-path', '-o',
         default=os.getcwd(),
-        help='build output path (PEX file)')
+        help='build output path (will contain PEX file)')
 
     args = parser.parse_args()
 
