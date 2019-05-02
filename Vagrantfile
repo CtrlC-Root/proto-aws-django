@@ -6,9 +6,6 @@ Vagrant.configure("2") do |config|
   config.vm.provision "shell", path: "scripts/01-update.sh"
   config.vm.provision "shell", path: "scripts/02-install-python.sh"
 
-  config.vbguest.auto_update = false
-  config.vbguest.no_remote = true
-
   config.vm.define "web" do |web|
     web.vm.hostname = "web"
     web.vm.provider "virtualbox" do |vb|

@@ -6,13 +6,9 @@ updates.
 ## Requirements
 
 * Python 3.5+
-* VirtualBox **6.0.6** (w/ matching Guest ISO)
+* VirtualBox
 * Vagrant
 * Packer
-
-**NOTE**: There are bugs in the `vboxsf` shared filesystem driver that are
-fixed in VirtualBox 6.0.6 host and guest modules. Older versions won't let you
-run `doit` in the `/vagrant` directory.
 
 ## Quick Start
 
@@ -22,32 +18,16 @@ Create a python virtualenv, install dependencies, and link utility packages.
 virtualenv -p $(which python3) env
 source env/bin/activate
 pip install -r requirements.txt
-python pkg/multitool/setup.py develop
-```
-
-Use `doit` to list and run tasks.
-
-```bash
-doit list
-doit update_web_ami
 ```
 
 ## Vagrant
 
 TODO: why this matters, python version
 
-Install necessary vagrant plugins.
-
-```bash
-vagrant plugin install vagrant-vbguest
-```
-
 Create and provision the virtual machine.
 
 ```bash
 vagrant up
-vagrant vbguest --no-provision
-vagrant reload
 ```
 
 The virtual machine copies your `~/.aws/config` and `~/.aws/credentials` files
@@ -72,7 +52,6 @@ Now you can follow the regular environment setup instructions from above.
 
 Tools:
 
-* [DoIt](http://pydoit.org/)
 * [Pex](https://pex.readthedocs.io/en/stable/index.html)
 * [Vagrant VBGuest](https://github.com/dotless-de/vagrant-vbguest)
 
