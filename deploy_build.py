@@ -19,16 +19,7 @@ ASG_PROCESSES = [
     'AlarmNotification']
 
 
-def main():
-    # parse command line arguments
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        '--app-build', '-a',
-        required=True,
-        help='application build')
-
-    args = parser.parse_args()
-
+def deploy_build(app_build):
     # retrieve the stack and it's outputs
     cloudformation = boto3.resource('cloudformation')
     stack = cloudformation.Stack(STACK_NAME)
@@ -39,9 +30,9 @@ def main():
     bucket = s3.Bucket(outputs['DeploymentBucket'])
 
     # upload the application build
-    print("Uploading {0} to {1}".format(args.app_build, bucket.name))
-    application = os.path.basename(args.app_build)
-    bucket.upload_file(args.app_build, application)
+    print("Uploading {0} to {1}".format(app_build, bucket.name))
+    application = os.path.basename(app_build)
+    bucket.upload_file(app_build, application)
 
     # retrieve autoscaling group
     asg = stack.Resource(STACK_ASG)
@@ -61,15 +52,6 @@ def main():
     ec2 = boto3.resource('ec2')
     instance_data = response['AutoScalingGroups'][0]['Instances']
     instances = [ec2.Instance(d['InstanceId']) for d in instance_data]
-
-    # update the build parameter
-    print("Set '{0}' to '{1}'".format(BUILD_PARAMETER, application))
-    ssm = boto3.client('ssm')
-    ssm.put_parameter(
-        Name=BUILD_PARAMETER,
-        Type='String',
-        Value=application,
-        Overwrite=True)
 
     # update instances sequentially
     for instance in instances:
@@ -104,7 +86,11 @@ def main():
         # connect to the instance and run the update script
         print("Updating instance...")
         connection = fabric.Connection(instance.public_ip_address, user='ubuntu')
-        result = connection.run('sudo -H python3 /opt/frontdesk/update.py')
+        result = connection.run(' '.join([
+            'sudo', '-H', 'python3',
+            '/opt/frontdesk/deploy.py',
+            '--app-build', application
+        ]))
 
         # resume the instance
         print("Moving instance {0} to service pool".format(instance.id))
@@ -133,10 +119,29 @@ def main():
             sys.stdout.flush()
             time.sleep(1)
 
+    # update the build parameter
+    print("Updating {0} to {1}".format(BUILD_PARAMETER, application))
+    ssm = boto3.client('ssm')
+    ssm.put_parameter(
+        Name=BUILD_PARAMETER,
+        Type='String',
+        Value=application,
+        Overwrite=True)
+
     # resume autoscaling processes
     print("Resume {0} processes".format(asg_name))
     autoscaling.resume_processes(AutoScalingGroupName=asg_name)
 
 
 if __name__ == '__main__':
-    main()
+    # parse command line arguments
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        '--app-build', '-a',
+        required=True,
+        help='application build')
+
+    args = parser.parse_args()
+
+    # deploy the build
+    deploy_build(args.app_build)
