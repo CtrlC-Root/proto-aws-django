@@ -26,10 +26,10 @@
     - /opt/frontdesk
     - /opt/frontdesk/app
 
-- name: create update script
+- name: create deploy script
   copy:
-    src: opt/frontdesk/update.py
-    dest: /opt/frontdesk/update.py
+    src: opt/frontdesk/deploy.py
+    dest: /opt/frontdesk/deploy.py
     owner: root
     group: root
     mode: 0755

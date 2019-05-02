@@ -1,3 +1,3 @@
 #!/bin/bash
 
-exec python3 /opt/frontdesk/update.py --signal-asg
+exec python3 /opt/frontdesk/deploy.py --signal-asg
