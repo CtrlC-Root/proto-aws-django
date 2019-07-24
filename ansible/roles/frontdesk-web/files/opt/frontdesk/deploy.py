@@ -100,6 +100,16 @@ def deploy(app_build=None, signal_asg=False):
     # create the shared boto session
     session = boto3.session.Session(region_name=get_region())
 
+    # detect application build if necessary
+    if not app_build:
+        print("Fetching application build from SSM...")
+        app_build = get_ssm_parameter(session, 'ApplicationBuild')
+
+    # quit early if there's no build available
+    if not app_build:
+        print("No application build available, quitting!")
+        sys.exit(1)
+
     # retrieve the local instance tags
     tags = get_instance_tags(session, get_instance_id())
     stack_name = tags['aws:cloudformation:stack-name']
@@ -111,10 +121,6 @@ def deploy(app_build=None, signal_asg=False):
     try:
         # locate the deployment bucket
         outputs = get_stack_outputs(session, stack_name)
-
-        # detect application build if necessary
-        if not app_build:
-            app_build = get_ssm_parameter(session, 'ApplicationBuild')
 
         # download the application
         app_path = reduce(
