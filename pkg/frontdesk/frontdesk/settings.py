@@ -74,6 +74,17 @@ DATABASES = {
     }
 }
 
+# http://docs.celeryproject.org/en/latest/getting-started/brokers/redis.html
+CELERY_BROKER_URL = 'redis://{0}:{1}/{2}'.format(
+    os.environ.get('CELERY_HOST', 'localhost'),
+    int(os.environ.get('CELERY_PORT', '6379')),
+    int(os.environ.get('CELERY_DB', '0')))
+
+CELERY_BROKER_TRANSPORT_OPTIONS = {
+    'fanout_prefix': True}
+
+CELERY_RESULT_BACKEND = CELERY_BROKER_URL
+
 # https://docs.djangoproject.com/en/2.2/ref/settings/#auth-password-validators
 AUTH_PASSWORD_VALIDATORS = [
     {
