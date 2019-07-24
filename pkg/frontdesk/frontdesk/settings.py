@@ -76,9 +76,9 @@ DATABASES = {
 
 # http://docs.celeryproject.org/en/latest/getting-started/brokers/redis.html
 CELERY_BROKER_URL = 'redis://{0}:{1}/{2}'.format(
-    os.environ.get('CELERY_HOST', 'localhost'),
-    int(os.environ.get('CELERY_PORT', '6379')),
-    int(os.environ.get('CELERY_DB', '0')))
+    os.environ.get('REDIS_HOST', 'localhost'),
+    int(os.environ.get('REDIS_PORT', '6379')),
+    int(os.environ.get('REDIS_DB', '0')))
 
 CELERY_BROKER_TRANSPORT_OPTIONS = {
     'fanout_prefix': True}
