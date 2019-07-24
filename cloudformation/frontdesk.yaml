@@ -250,6 +250,19 @@ Resources:
                     - Region: !Ref "AWS::Region"
                       Account: !Ref "AWS::AccountId"
                       DBInstance: !Ref DatabaseInstance
+        - PolicyName: AllowDescribeElastiCache
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - elasticache:DescribeCacheClusters
+                Resource:
+                  Fn::Sub:
+                    - "arn:aws:elasticache:${Region}:${Account}:cluster:${ClusterName}"
+                    - Region: !Ref "AWS::Region"
+                      Account: !Ref "AWS::AccountId"
+                      ClusterName: !Ref ElastiCacheCluster
 
   WebInstanceProfile:
     Type: AWS::IAM::InstanceProfile
