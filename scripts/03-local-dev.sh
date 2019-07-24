@@ -8,6 +8,20 @@ export DEBIAN_FRONTEND=noninteractive
 # install python virtualenv support
 apt-get -y install python3-virtualenv virtualenv
 
+# install redis
+dpkg -l redis-server &> /dev/null
+if [ $? -ne 0 ]; then
+    sudo apt-get install -y redis-server
+    sudo sed -i -e 's/\(bind \)127.0.0.1 ::1/\10.0.0.0/' /etc/redis/redis.conf
+    sudo systemctl restart redis-server.service
+fi
+
+systemctl is-active redis-server.service &> /dev/null
+if [ $? -ne 0 ]; then
+    sudo systemctl enable redis-server.service
+    sudo systemctl start redis-server.service
+fi
+
 # install postgres
 dpkg -l postgresql &> /dev/null
 if [ $? -ne 0 ]; then

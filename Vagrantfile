@@ -17,5 +17,6 @@ Vagrant.configure("2") do |config|
     web.vm.provision "file", source: "~/.aws/config", destination: ".aws/config"
     web.vm.provision "file", source: "~/.aws/credentials", destination: ".aws/credentials"
     web.vm.network :forwarded_port, guest: 5432, host: 5432 # postgres
+    web.vm.network :forwarded_port, guest: 6379, host: 6379 # redis
   end
 end
