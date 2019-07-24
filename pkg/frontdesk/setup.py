@@ -19,7 +19,8 @@ setup(
 
     install_requires=[
         'Django >= 2.2.0',
-        'Celery >= 4.3.0'
+        'Celery >= 4.3.0',
+        'redis >= 3.2.0'
     ],
 
     entry_points={
