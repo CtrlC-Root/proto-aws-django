@@ -58,11 +58,6 @@ Resources:
           ToPort: 5432
           SourceSecurityGroupId:
             Ref: WebSecurityGroup
-        - IpProtocol: tcp
-          FromPort: 5432
-          ToPort: 5432
-          SourceSecurityGroupId:
-            Ref: WebSecurityGroup
       Tags:
         - Key: Name
           Value: Database
@@ -102,6 +97,46 @@ Resources:
           Value: Frontdesk
         - Key: Project
           Value: Frontdesk
+
+  # ElastiCache
+  ElastiCacheSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    DependsOn: WebSecurityGroup
+    Properties:
+      GroupDescription: Allow Redis from Web instances
+      VpcId:
+        Ref: VpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 6379
+          ToPort: 6379
+          SourceSecurityGroupId:
+            Ref: WebSecurityGroup
+      Tags:
+        - Key: Name
+          Value: Redis
+        - Key: Project
+          Value: Frontdesk
+
+  ElastiCacheSubnetGroup:
+    Type: AWS::ElastiCache::SubnetGroup
+    Properties:
+      Description: Frontdesk Redis
+      SubnetIds:
+        - Ref: PrimarySubnetId
+        - Ref: SecondarySubnetId
+
+  ElastiCacheCluster:
+    Type: AWS::ElastiCache::CacheCluster
+    Properties:
+      CacheNodeType: cache.t2.micro
+      CacheSubnetGroupName: !Ref ElastiCacheSubnetGroup
+      Engine: redis
+      EngineVersion: 4.0.10
+      NumCacheNodes: 1
+      Port: 6379
+      VpcSecurityGroupIds:
+        - Fn::GetAtt: ["ElastiCacheSecurityGroup", "GroupId"]
 
   # Deployment
   DeploymentBucket:
