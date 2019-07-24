@@ -7,13 +7,16 @@
     group: root
     mode: 0640
 
-- name: install systemd service
+- name: install systemd services
   copy:
-    src: etc/systemd/system/frontdesk-web.service
-    dest: /etc/systemd/system/frontdesk-web.service
+    src: "etc/systemd/system/{{ item }}.service"
+    dest: "/etc/systemd/system/{{ item }}.service"
     owner: root
     group: root
     mode: 0644
+  loop:
+    - frontdesk-web
+    - frontdesk-worker
 
 - name: create folders
   file:

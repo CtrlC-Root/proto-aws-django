@@ -1,0 +1,10 @@
+[Unit]
+Description=Frontdesk Task Worker
+
+[Service]
+Type=simple
+EnvironmentFile=/etc/default/frontdesk
+ExecStart=/bin/bash -c "${FRONTDESK_APP} run_worker"
+
+[Install]
+WantedBy=multi-user.target

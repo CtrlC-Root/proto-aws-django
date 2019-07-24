@@ -14,8 +14,9 @@ import requests
 METADATA_URL = 'http://169.254.169.254/latest/meta-data'
 STACK_ASG = 'WebAutoScalingGroup'
 STACK_DBI = 'DatabaseInstance'
+STACK_ECC = 'ElastiCacheCluster'
 SYSTEMD_ENV_FILE = '/etc/default/frontdesk'
-SYSTEMD_SERVICE = 'frontdesk-web'
+SYSTEMD_SERVICES = ['frontdesk-web', 'frontdesk-worker']
 
 
 def get_region():
@@ -116,7 +117,8 @@ def deploy(app_build=None, signal_asg=False):
 
     # stop running services
     print("Stop running services...")
-    configure_service(SYSTEMD_SERVICE, False)
+    for service in SYSTEMD_SERVICES:
+        configure_service(service, False)
 
     try:
         # locate the deployment bucket
@@ -147,6 +149,18 @@ def deploy(app_build=None, signal_asg=False):
         db_host = instance_data['Endpoint']['Address']
         db_port = instance_data['Endpoint']['Port']
 
+        # retrieve elasticache settings
+        ec = session.client('elasticache')
+        cluster_id = get_stack_resource_id(session, stack_name, STACK_ECC)
+        response = ec.describe_cache_clusters(
+            CacheClusterId=cluster_id,
+            ShowCacheNodeInfo=True)
+
+        cluster_data = response['CacheClusters'][0]
+        node_data = cluster_data['CacheNodes'][0]
+        redis_host = node_data['Endpoint']['Address']
+        redis_port = node_data['Endpoint']['Port']
+
         # write the environment file
         env_vars = {
             'FRONTDESK_APP': app_path,
@@ -155,7 +169,9 @@ def deploy(app_build=None, signal_asg=False):
             'DB_USER': db_user,
             'DB_PASS': db_pass,
             'DB_HOST': db_host,
-            'DB_PORT': str(db_port)}
+            'DB_PORT': str(db_port),
+            'REDIS_HOST': redis_host,
+            'REDIS_PORT': str(redis_port)}
 
         print("Writing settings to {0}".format(SYSTEMD_ENV_FILE))
         with open(SYSTEMD_ENV_FILE, 'w') as env_file:
@@ -176,7 +192,8 @@ def deploy(app_build=None, signal_asg=False):
 
         # enable and start the service
         print("Start running services...")
-        configure_service(SYSTEMD_SERVICE, True)
+        for service in SYSTEMD_SERVICES:
+            configure_service(service, True)
 
     except Exception as e:
         if args.signal_asg:
