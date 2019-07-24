@@ -84,7 +84,7 @@ Here's the SSM parameters you need to set:
 * `WebImageId` (String) Web ASG AMI Id (i.e. `ami-ABCDWXYZ`)
 * `KeyName` (String) SSH KeyPair Name
 * `SecretKey` (SecureString) Django `SECRET_KEY` setting
-* `MasterDatabasePassword` (SecureString) Database master user password
+* `DatabaseMasterPassword` (SecureString) Database master user password
 
 Here's how you create the CloudFormation stack:
 
