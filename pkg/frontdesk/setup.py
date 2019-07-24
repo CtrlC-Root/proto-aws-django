@@ -18,7 +18,8 @@ setup(
     zip_safe=False,
 
     install_requires=[
-        'Django >= 2.2.0'
+        'Django >= 2.2.0',
+        'Celery >= 4.3.0'
     ],
 
     entry_points={
