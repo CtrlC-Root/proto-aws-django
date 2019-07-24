@@ -5,10 +5,10 @@ updates.
 
 ## Requirements
 
-* Python 3.5+
-* VirtualBox
-* Vagrant
-* Packer
+* Python >= 3.5
+* VirtualBox >= 6.0.0
+* Vagrant >= 2.2.0
+* Packer >= 1.4.0
 
 ## Vagrant
 
@@ -28,18 +28,18 @@ ssh-add
 vagrant ssh -- -A
 ```
 
-Navigate to the `/vagrant` folder which is synchronized with the top-level
-project folder.
-
-```bash
-cd /vagrant
-```
-
-Create a python virtualenv and install dependencies.
+Create a python virtualenv.
 
 ```bash
 virtualenv -p $(which python3) env
 source env/bin/activate
+```
+
+Navigate to the `/vagrant` folder which is synchronized with the top-level
+project folder. Install python dependencies.
+
+```bash
+cd /vagrant
 pip install -r requirements.txt
 ```
 
