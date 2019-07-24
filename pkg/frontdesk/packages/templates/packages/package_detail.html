@@ -1,2 +1,12 @@
 <h1>{{ package.tracking_number }} ({{ package.carrier }})</h1>
 <p>Created: {{ package.created|date }}</p>
+{% if package.checked %}
+<p>Last Check: {{ package.checked|date }}</p>
+{% else %}
+<p>Last Check: N/A</p>
+{% endif %}
+
+<form action="{% url 'package-detail' package.id %}" method="post">
+  {% csrf_token %}
+  <input type="submit" value="Request Sync" />
+</form>

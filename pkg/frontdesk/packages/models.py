@@ -35,3 +35,8 @@ class Package(models.Model):
     created = models.DateTimeField(
         default=timezone.now,
         help_text="Tracking label created.")
+
+    checked = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="Retrieved package status from carrier.")
