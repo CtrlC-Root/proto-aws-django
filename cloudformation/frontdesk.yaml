@@ -257,12 +257,7 @@ Resources:
               - Effect: Allow
                 Action:
                   - elasticache:DescribeCacheClusters
-                Resource:
-                  Fn::Sub:
-                    - "arn:aws:elasticache:${Region}:${Account}:cluster:${ClusterName}"
-                    - Region: !Ref "AWS::Region"
-                      Account: !Ref "AWS::AccountId"
-                      ClusterName: !Ref ElastiCacheCluster
+                Resource: "*"
 
   WebInstanceProfile:
     Type: AWS::IAM::InstanceProfile
